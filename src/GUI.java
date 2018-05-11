@@ -1,9 +1,11 @@
 import javax.swing.*;
 import java.awt.*;
+import java.util.HashSet;
 
 import static java.awt.Color.getColor;
 
 public class GUI extends JFrame {
+    HashSet<String> hashSetUsers = new HashSet<String>();
 
     DefaultListModel<String> modelList;
     JList<String> jList;

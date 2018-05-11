@@ -44,18 +44,43 @@ class SocketThread extends Thread
                     if (firstNumberChar > 0) {
                         user = str.substring(0, firstNumberChar);
                         // TODO Сделать - если в пришедшем Ответе есть новый пользователь - то добавляем его в userList
-                        gui.modelList.addElement(user);
+
+                        //если такого пользователя нет еще в hashSet тогда добавляем
+                        if (!gui.hashSetUsers.contains(user)) {
+                                gui.hashSetUsers.add(user);
+                        }
+
+                        //очищаем список пользователей
+                        gui.modelList.clear();
+
+                        //заполняем List на форме всеми уник. пользователями
+                        for (Object userSet : gui.hashSetUsers) {
+                            gui.modelList.addElement(userSet.toString());
+                        }
 
                     }
 
-                    // TODO Сделать - Посылать ответ всем юзерам из jList
-
-                    // Посылаем клиенту ответ
-
                     // Выделяем только текст сообщения
                     String message = str;
+
+                    // TODO Сделать - Посылать ответ всем юзерам из jList
+                    // Создать класс Connection - объект будет создаваться каждый раз(возможно только для ногового пользователя,единожды) при отправке сообщения
+
+                    // Отправим всем клиентам по ip сообщение
+
+                    for (String userSet : gui.hashSetUsers) {
+                        Connection connection = new Connection(1777, userSet);
+                        connection.init();
+                        connection.sent(message);
+                        connection.close();
+                    }
+
+                    // Оправим на Табло сервера текст сообщения клиента
                     gui.jTextArea.append("\r\n"+message);
-                    pw.println(message);
+
+                    //отправлять не будем по этому ip. Отправим выше всем клиентам по ip
+                    //pw.println(message);
+
                 }
             }
         } catch (IOException ex) {
