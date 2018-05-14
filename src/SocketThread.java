@@ -27,16 +27,18 @@ class SocketThread extends Thread
              PrintWriter pw = new PrintWriter(localSocket.getOutputStream(), true);
              BufferedReader br = new BufferedReader(new InputStreamReader(localSocket.getInputStream()))) {
 
-            // Читаем сообщения от клиента
+            // Читаем сообщения от клиента ? / клиентов ?
             String str;
             while ((str = br.readLine()) != null) {
                 // Печатаем сообщение
                 System.out.println("The message: " + str);
-                // Сравниваем с "bye" и если это так - выходим из цикла и закрываем соединение
                 if (str.contains("Request of connection of the server")) {
                     // Посылаем клиенту Положительную проверку на соединение с Сервером
                     pw.println("- Server correct-");
                     //break;
+                    br.close();
+                    pw.close();
+                    localSocket.close();
                 } else {
                     //получить пользователя
                     int firstNumberChar = str.indexOf(": ");
@@ -45,9 +47,35 @@ class SocketThread extends Thread
                         user = str.substring(0, firstNumberChar);
                         // TODO Сделать - если в пришедшем Ответе есть новый пользователь - то добавляем его в userList
 
-                        //если такого пользователя нет еще в hashSet тогда добавляем
+                        // Выделяем только текст сообщения
+                        String message = str;
+
+                        //если такого пользователя нет еще в hashSetUsers тогда добавляем,
+                        // отправляем сообщение всем из hashSetUsers
+                        // кроме fromClientSocket.getLocalSocketAddress() - того, от кого пришло само сообщение
+                        // - т.к. клиент сами себе на табло посылает свое же сообщение
+                        // _ Наверно так не правильно - пусть лучше приходит от сервера только
                         if (!gui.hashSetUsers.contains(user)) {
-                                gui.hashSetUsers.add(user);
+                            gui.hashSetUsers.add(user);
+//                            Connection connection = new Connection(1777, user);
+//                            connection.init();
+//                            connection.sent(message);
+//                            connection.close();
+
+                            //отправим сообщение клиенту ответом сокета .
+                            pw.println(message);
+                        }
+
+                        // TODO Сделать - Посылать ответ всем юзерам из hashSetUsers
+                        // Создать класс Connection - объект будет создаваться каждый раз(возможно только для ногового пользователя,единожды) при отправке сообщения
+                        // Отправим всем клиентам по ip сообщение
+                        for (String userSet : gui.hashSetUsers) {
+                            if (!fromClientSocket.getLocalSocketAddress().equals(userSet)) {
+                                Connection connection = new Connection(1777, userSet);
+                                connection.init();
+                                connection.sent(message);
+                                connection.close();
+                            }
                         }
 
                         //очищаем список пользователей
@@ -58,29 +86,10 @@ class SocketThread extends Thread
                             gui.modelList.addElement(userSet.toString());
                         }
 
+                        // Оправим на Табло сервера текст сообщения клиента
+                        gui.jTextArea.append("\r\n"+message);
+
                     }
-
-                    // Выделяем только текст сообщения
-                    String message = str;
-
-                    // TODO Сделать - Посылать ответ всем юзерам из jList
-                    // Создать класс Connection - объект будет создаваться каждый раз(возможно только для ногового пользователя,единожды) при отправке сообщения
-
-                    // Отправим всем клиентам по ip сообщение
-
-                    for (String userSet : gui.hashSetUsers) {
-                        Connection connection = new Connection(1777, userSet);
-                        connection.init();
-                        connection.sent(message);
-                        connection.close();
-                    }
-
-                    // Оправим на Табло сервера текст сообщения клиента
-                    gui.jTextArea.append("\r\n"+message);
-
-                    //отправлять не будем по этому ip. Отправим выше всем клиентам по ip
-                    //pw.println(message);
-
                 }
             }
         } catch (IOException ex) {

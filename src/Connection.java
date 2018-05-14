@@ -51,6 +51,7 @@ public class Connection implements UserConnection {
 
     @Override
     public void close() throws IOException {
+        //br.close();
         pw.close();
         socket.close();
     }
