@@ -7,11 +7,11 @@ import java.net.Socket;
 
 // Этот отдельный класс для обработки запроса клиента,
 // который запускается в отдельном потоке
-class SocketThread extends Thread
-{
+class SocketThread extends Thread {
     private Socket fromClientSocket;
     private GUI gui;
     DefaultListModel model;
+    static int quantityOfCalls;
 
     public SocketThread(Socket fromClientSocket, GUI gui) {
 
@@ -35,10 +35,6 @@ class SocketThread extends Thread
                 if (str.contains("Request of connection of the server")) {
                     // Посылаем клиенту Положительную проверку на соединение с Сервером
                     pw.println("- Server correct-");
-                    //break;
-                    br.close();
-                    pw.close();
-                    localSocket.close();
                 } else {
                     //получить пользователя
                     int firstNumberChar = str.indexOf(": ");
@@ -47,10 +43,11 @@ class SocketThread extends Thread
                         user = str.substring(0, firstNumberChar);
                         // TODO Сделать - если в пришедшем Ответе есть новый пользователь - то добавляем его в userList
 
-                        // Выделяем только текст сообщения
                         String message = str;
+//                        Выделяем только текст сообщения
+//                        String message = str.substring(user.length()+2);
 
-                        //если такого пользователя нет еще в hashSetUsers тогда добавляем,
+                        // Если такого пользователя нет - еще в hashSetUsers тогда добавляем,
                         // отправляем сообщение всем из hashSetUsers
                         // кроме fromClientSocket.getLocalSocketAddress() - того, от кого пришло само сообщение
                         // - т.к. клиент сами себе на табло посылает свое же сообщение
@@ -63,19 +60,21 @@ class SocketThread extends Thread
 //                            connection.close();
 
                             //отправим сообщение клиенту ответом сокета .
-                            pw.println(message);
+//                            pw.println(message);
                         }
 
                         // TODO Сделать - Посылать ответ всем юзерам из hashSetUsers
                         // Создать класс Connection - объект будет создаваться каждый раз(возможно только для ногового пользователя,единожды) при отправке сообщения
                         // Отправим всем клиентам по ip сообщение
+                        quantityOfCalls++;
+                        System.out.println("quantity Of Calls - "+ quantityOfCalls);
                         for (String userSet : gui.hashSetUsers) {
-                            if (!fromClientSocket.getLocalSocketAddress().equals(userSet)) {
+//                            if (!fromClientSocket.getLocalAddress().toString().substring(1).equals(userSet)) {
                                 Connection connection = new Connection(1777, userSet);
                                 connection.init();
                                 connection.sent(message);
                                 connection.close();
-                            }
+//                            }
                         }
 
                         //очищаем список пользователей
