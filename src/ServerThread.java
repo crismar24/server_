@@ -1,5 +1,8 @@
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -16,22 +19,22 @@ public class ServerThread {
         GUI gui = new GUI(ipServer, port);
         gui.setVisible(true);
 
-        try {
-            // Открыть серверный сокет (ServerSocket)
-            ServerSocket servSocket = new ServerSocket(port);
+        // Открыть серверный сокет (ServerSocket)
+//            ServerSocket servSocket = new ServerSocket(port);
+        // Получив соединение начинаем работать с сокетом
+//            Socket fromClientSocket = servSocket.accept();
 
-            while (true) {
-                System.out.println("Waiting for a connection...");
-                gui.jTextArea.append("\nWaiting for a connection...");
-                // Получив соединение начинаем работать с сокетом
-                Socket fromClientSocket = servSocket.accept();
+//            Socket connection = new Socket(ipServer, port);
+//            BufferedReader br = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+//            PrintWriter pw = new PrintWriter(connection.getOutputStream(), true);
 
-                // Стартуем новый поток для обработки запроса клиента
-                new SocketThread(fromClientSocket, gui).start();
-            }
-        } catch (IOException ex) {
-            ex.printStackTrace(System.out);
-        }
+        // Стартуем новый поток для обработки запроса клиента
+        // "Слушает" socket ip сервера
+        new SocketThread(port, ipServer, gui).start();
+
+        System.out.println("Waiting for a connection...");
+        gui.jTextArea.append("\nWaiting for a connection...");
+
         //gui.setVisible(true);
     }
 
